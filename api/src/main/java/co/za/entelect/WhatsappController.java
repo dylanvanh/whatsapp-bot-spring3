@@ -1,7 +1,8 @@
 package co.za.entelect;
 
-import co.za.entelect.Dtos.Whatsapp.IncomingWhatsappMessageDto;
+import co.za.entelect.Dtos.Whatsapp.Incoming.IncomingWhatsappMessageDto;
 import co.za.entelect.services.MessageService;
+import io.github.cdimascio.dotenv.Dotenv;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -12,20 +13,23 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/api/whatsapp")
 public class WhatsappController {
 
-    private final MessageService messageService;
+    private final MessageService _messageService;
+    private final Dotenv dotEnv;
 
     @Autowired
-    public WhatsappController(MessageService messageService) {
-        this.messageService = messageService;
+    public WhatsappController(MessageService messageService, Dotenv dotenv) {
+        this._messageService = messageService;
+        this.dotEnv = dotenv;
     }
 
     @PostMapping
-    public ResponseEntity<Void> handleWebhook(@RequestBody IncomingWhatsappMessageDto incomingMessageDto) {
+    public ResponseEntity<?> handleWebhook(@RequestBody IncomingWhatsappMessageDto incomingMessageDto) {
         System.out.println("POST REQUEST HIT");
 
-        // Check the Incoming webhook message
+
         if (incomingMessageDto != null) {
-            System.out.println("Incoming message: " + incomingMessageDto.toString());
+            System.out.println(incomingMessageDto);
+            _messageService.handleIncomingMessage(incomingMessageDto);
         } else {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
@@ -41,11 +45,10 @@ public class WhatsappController {
 
         System.out.println("HIT");
 
-        String verifyToken = System.getenv("VERIFY_TOKEN");
+        String verifyToken = dotEnv.get("VERIFY_TOKEN");
 
         if (mode != null && token != null) {
             if ("subscribe".equals(mode) && verifyToken.equals(token)) {
-                System.out.println("WEBHOOK_VERIFIED");
                 return new ResponseEntity<>(challenge, HttpStatus.OK);
             } else {
                 return new ResponseEntity<>(HttpStatus.FORBIDDEN);
