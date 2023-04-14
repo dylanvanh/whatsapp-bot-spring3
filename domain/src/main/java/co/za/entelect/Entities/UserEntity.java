@@ -19,4 +19,7 @@ public class UserEntity extends IIdentifiableEntity {
     private String name;
 
     private String phone;
+
+    @Column(name = "phone_number_id")
+    private String phoneNumberId;
 }

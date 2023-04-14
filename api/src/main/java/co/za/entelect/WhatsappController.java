@@ -26,15 +26,13 @@ public class WhatsappController {
     public ResponseEntity<?> handleWebhook(@RequestBody IncomingWhatsappMessageDto incomingMessageDto) {
         System.out.println("POST REQUEST HIT");
 
-
-        if (incomingMessageDto != null) {
-            System.out.println(incomingMessageDto);
-            _messageService.handleIncomingMessage(incomingMessageDto);
-        } else {
+        if (incomingMessageDto == null) {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
 
+        _messageService.handleIncomingMessage(incomingMessageDto);
         return new ResponseEntity<>(HttpStatus.OK);
+
     }
 
     @GetMapping

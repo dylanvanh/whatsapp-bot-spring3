@@ -19,7 +19,8 @@ public class TestController {
 
     @GetMapping
     public UserEntity test() {
-        var temp = _userService.getUser(1);
-        return temp.get();
+        return _userService.getUser(1).orElseThrow(() -> new RuntimeException("User not found"));
     }
+
+
 }

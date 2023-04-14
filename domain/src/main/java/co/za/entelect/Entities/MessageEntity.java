@@ -17,7 +17,8 @@ public class MessageEntity extends IIdentifiableEntity {
 
     private String message;
 
-    private LocalDateTime messageDateTime;
+    @Column(name = "received_datetime")
+    private LocalDateTime receivedDateTime;
 
     @ManyToOne
     @JoinColumn(name = "user_id")

@@ -18,7 +18,7 @@ public class UserService {
     }
 
     public Optional<UserEntity> getUser(long id) {
-        return userRepository.findById(id);
+        return Optional.ofNullable(userRepository.findByPhoneNumberId("ASD"));
     }
 
 }

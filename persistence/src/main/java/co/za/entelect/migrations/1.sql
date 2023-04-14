@@ -1,7 +1,7 @@
 CREATE USER whatsapp_user WITH PASSWORD 'password123';
 
 -- Create the auth_database
-CREATE DATABASE auth_database WITH OWNER whatsapp_user;
+CREATE DATABASE whatsapp WITH OWNER whatsapp_user;
 
 
 CREATE TABLE "user"
@@ -18,7 +18,7 @@ CREATE TABLE "message"
     id              SERIAL PRIMARY KEY,
     message         VARCHAR(256) NOT NULL,
     user_id         INTEGER      NOT NULL,
-    messageDateTime timestamp     NOT NULL,
+    received_datetime timestamp     NOT NULL,
     FOREIGN KEY (user_id) REFERENCES "user" (id)
 );
 
