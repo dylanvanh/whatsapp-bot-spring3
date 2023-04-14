@@ -47,6 +47,7 @@ public class MessageService {
         String messageText = incomingMessageDto.entry().get(0).changes().get(0).value().messages().get(0).text().body();
         String phoneNumberId = incomingMessageDto.entry().get(0).changes().get(0).value().metadata().phone_number_id();
 
+        saveMessage(messageId, fromNumber, messageText, phoneNumberId, timestamp, userName);
         markMessageAsRead(messageId, phoneNumberId);
         sendTextResponse(messageId, fromNumber, messageText, phoneNumberId, timestamp, userName);
     }
@@ -56,8 +57,7 @@ public class MessageService {
                                   String timestamp, String userName) {
         String whatsappToken = dotEnv.get("WHATSAPP_TOKEN");
 
-        SendTextMessageDto sendTextMessageDto = generateResponse(messageId, fromNumber, messageText, phoneNumberId,
-                timestamp, userName);
+        SendTextMessageDto sendTextMessageDto = generateResponse(fromNumber, messageText);
         HttpEntity<String> entity = generateEntity(sendTextMessageDto);
         String url = String.format("https://graph.facebook.com/v12.0/%s/messages?access_token=%s", phoneNumberId,
                 whatsappToken);
@@ -71,11 +71,23 @@ public class MessageService {
     }
 
 
-    private SendTextMessageDto generateResponse(String messageId, String fromNumber, String messageText,
-                                                String phoneNumberId, String timeStamp, String userName) {
+    private SendTextMessageDto generateResponse(String fromNumber, String messageText) {
 
         String response = "You said : " + messageText;
 
+        SendTextMessageDto sendTextMessageDto = SendTextMessageDto.builder()
+                .messaging_product("whatsapp")
+                .to(fromNumber)
+                .text(SendTextMessageDto.MessageText
+                        .builder()
+                        .body(response).build())
+                .build();
+
+        return sendTextMessageDto;
+    }
+
+    private void saveMessage(String messageId, String fromNumber, String messageText, String phoneNumberId,
+                             String timeStamp, String userName) {
         UserEntity existingUser = userRepository.findByPhoneNumberId(phoneNumberId);
         if (existingUser == null) {
             existingUser = UserEntity.builder()
@@ -93,16 +105,6 @@ public class MessageService {
                 .user(existingUser)
                 .build();
         messageRepository.save(newMessage);
-
-        SendTextMessageDto sendTextMessageDto = SendTextMessageDto.builder()
-                .messaging_product("whatsapp")
-                .to(fromNumber)
-                .text(SendTextMessageDto.MessageText
-                        .builder()
-                        .body(response).build())
-                .build();
-
-        return sendTextMessageDto;
     }
 
 
