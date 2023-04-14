@@ -1,8 +1,5 @@
 package co.za.entelect.Dtos.Whatsapp.Incoming;
 
-import lombok.Builder;
-import lombok.Getter;
-
 import java.util.List;
 
 public record IncomingWhatsappMessageDto(String object, List<Entry> entry) {

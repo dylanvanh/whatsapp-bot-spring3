@@ -1,4 +1,4 @@
-package co.za.entelect.services;
+package co.za.entelect.Facades;
 
 import co.za.entelect.Dtos.Whatsapp.Incoming.IncomingMessageSentResponse;
 import co.za.entelect.Dtos.Whatsapp.Incoming.IncomingWhatsappMessageDto;
@@ -8,12 +8,11 @@ import co.za.entelect.Entities.MessageEntity;
 import co.za.entelect.Entities.UserEntity;
 import co.za.entelect.repositories.MessageRepository;
 import co.za.entelect.repositories.UserRepository;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import co.za.entelect.services.WhatsappRequestEntityGenerator;
 import io.github.cdimascio.dotenv.Dotenv;
-import org.hibernate.sql.Update;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.*;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpMethod;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
@@ -22,21 +21,23 @@ import java.time.ZoneOffset;
 
 
 @Service
-public class MessageService {
+public class WhatsappMessageFacade {
 
     private final RestTemplate restTemplate;
     private final Dotenv dotEnv;
-
     private final UserRepository userRepository;
     private final MessageRepository messageRepository;
+    private final WhatsappRequestEntityGenerator whatsappRequestEntityGenerator;
 
     @Autowired
-    public MessageService(RestTemplate restTemplate, Dotenv dotEnv, UserRepository userRepository,
-                          MessageRepository messageRepository) {
+
+    public WhatsappMessageFacade(RestTemplate restTemplate, Dotenv dotEnv, UserRepository userRepository,
+                                 MessageRepository messageRepository, WhatsappRequestEntityGenerator whatsappRequestEntityGenerator) {
         this.restTemplate = restTemplate;
         this.dotEnv = dotEnv;
         this.userRepository = userRepository;
         this.messageRepository = messageRepository;
+        this.whatsappRequestEntityGenerator = whatsappRequestEntityGenerator;
     }
 
     public void handleIncomingMessage(IncomingWhatsappMessageDto incomingMessageDto) {
@@ -49,16 +50,16 @@ public class MessageService {
 
         saveMessage(messageId, fromNumber, messageText, phoneNumberId, timestamp, userName);
         markMessageAsRead(messageId, phoneNumberId);
-        sendTextResponse(messageId, fromNumber, messageText, phoneNumberId, timestamp, userName);
+        sendTextResponse(fromNumber, messageText, phoneNumberId);
     }
 
 
-    private void sendTextResponse(String messageId, String fromNumber, String messageText, String phoneNumberId,
-                                  String timestamp, String userName) {
+    private void sendTextResponse(String fromNumber, String messageText, String phoneNumberId) {
         String whatsappToken = dotEnv.get("WHATSAPP_TOKEN");
 
         SendTextMessageDto sendTextMessageDto = generateResponse(fromNumber, messageText);
-        HttpEntity<String> entity = generateEntity(sendTextMessageDto);
+        HttpEntity<String> entity = whatsappRequestEntityGenerator.generateEntity(sendTextMessageDto,
+                false);
         String url = String.format("https://graph.facebook.com/v12.0/%s/messages?access_token=%s", phoneNumberId,
                 whatsappToken);
 
@@ -69,7 +70,6 @@ public class MessageService {
         }
 
     }
-
 
     private SendTextMessageDto generateResponse(String fromNumber, String messageText) {
 
@@ -88,6 +88,7 @@ public class MessageService {
 
     private void saveMessage(String messageId, String fromNumber, String messageText, String phoneNumberId,
                              String timeStamp, String userName) {
+
         UserEntity existingUser = userRepository.findByPhoneNumberId(phoneNumberId);
         if (existingUser == null) {
             existingUser = UserEntity.builder()
@@ -110,14 +111,13 @@ public class MessageService {
 
     private void markMessageAsRead(String messageId, String phoneNumberId) {
 
-        //Update read receipt to read
         UpdateReadReceiptDto updateReadReceiptDto = UpdateReadReceiptDto.builder()
                 .messagingProduct("whatsapp")
                 .status("read")
                 .messageId(messageId)
                 .build();
 
-        HttpEntity<String> entity = generateEntity(updateReadReceiptDto);
+        HttpEntity<String> entity = whatsappRequestEntityGenerator.generateEntity(updateReadReceiptDto, true);
         String url = String.format("https://graph.facebook.com/v16.0/%s/messages", phoneNumberId);
 
         try {
@@ -127,48 +127,4 @@ public class MessageService {
         }
     }
 
-
-    private HttpHeaders generateBasicHeader() {
-        HttpHeaders httpHeaders = new HttpHeaders();
-        httpHeaders.setContentType(MediaType.APPLICATION_JSON);
-        return httpHeaders;
-    }
-
-
-    private HttpHeaders generateHeaderWithAuth() {
-        HttpHeaders httpHeaders = new HttpHeaders();
-        httpHeaders.setContentType(MediaType.APPLICATION_JSON);
-        httpHeaders.setBearerAuth(dotEnv.get("WHATSAPP_TOKEN"));
-        return httpHeaders;
-    }
-
-    private HttpEntity<String> generateEntity(UpdateReadReceiptDto updateReadReceiptDto) {
-        HttpHeaders httpHeaders = generateHeaderWithAuth();
-
-        String body;
-        try {
-            body = new ObjectMapper().writeValueAsString(updateReadReceiptDto);
-        } catch (Exception e) {
-            System.out.println(e.getMessage());
-            return null;
-        }
-
-        HttpEntity<String> entity = new HttpEntity<>(body, httpHeaders);
-        return entity;
-    }
-
-
-    private HttpEntity<String> generateEntity(SendTextMessageDto sendTextMessageDto) {
-        HttpHeaders httpHeaders = generateBasicHeader();
-
-        String body;
-        try {
-            body = new ObjectMapper().writeValueAsString(sendTextMessageDto);
-        } catch (JsonProcessingException e) {
-            throw new RuntimeException(e);
-        }
-
-        HttpEntity<String> entity = new HttpEntity<>(body, httpHeaders);
-        return entity;
-    }
 }

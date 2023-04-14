@@ -1,7 +1,7 @@
 package co.za.entelect;
 
 import co.za.entelect.Dtos.Whatsapp.Incoming.IncomingWhatsappMessageDto;
-import co.za.entelect.services.MessageService;
+import co.za.entelect.Facades.WhatsappMessageFacade;
 import io.github.cdimascio.dotenv.Dotenv;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -13,11 +13,11 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/api/whatsapp")
 public class WhatsappController {
 
-    private final MessageService _messageService;
+    private final WhatsappMessageFacade _messageService;
     private final Dotenv dotEnv;
 
     @Autowired
-    public WhatsappController(MessageService messageService, Dotenv dotenv) {
+    public WhatsappController(WhatsappMessageFacade messageService, Dotenv dotenv) {
         this._messageService = messageService;
         this.dotEnv = dotenv;
     }
