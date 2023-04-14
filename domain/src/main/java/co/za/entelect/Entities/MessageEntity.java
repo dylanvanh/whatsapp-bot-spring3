@@ -13,7 +13,7 @@ import java.time.LocalDateTime;
 @AttributeOverride(name = "id", column = @Column(name = "id"))
 @Table(name = "message", schema = "public")
 @Entity
-public class MessageEntity extends IIdentifiableEntity {
+public class MessageEntity extends IdentifiableEntity {
 
     private String message;
 

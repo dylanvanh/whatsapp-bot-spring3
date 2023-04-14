@@ -12,14 +12,9 @@ import lombok.*;
 @AllArgsConstructor
 @Builder
 @AttributeOverride(name = "id", column = @Column(name = "id"))
-@Table(name = "user", schema = "public")
+@Table(name = "leave_type", schema = "public")
 @Entity
-public class UserEntity extends IdentifiableEntity {
+public class LeaveTypeEntity extends IdentifiableEntity {
 
     private String name;
-
-    private String phone;
-
-    @Column(name = "phone_number_id")
-    private String phoneNumberId;
 }

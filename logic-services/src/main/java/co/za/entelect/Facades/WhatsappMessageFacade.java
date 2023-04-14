@@ -6,8 +6,8 @@ import co.za.entelect.Dtos.Whatsapp.Outgoing.SendTextMessageDto;
 import co.za.entelect.Dtos.Whatsapp.Outgoing.UpdateReadReceiptDto;
 import co.za.entelect.Entities.MessageEntity;
 import co.za.entelect.Entities.UserEntity;
-import co.za.entelect.repositories.MessageRepository;
-import co.za.entelect.repositories.UserRepository;
+import co.za.entelect.repositories.IMessageRepository;
+import co.za.entelect.repositories.IUserRepository;
 import co.za.entelect.services.WhatsappRequestEntityGenerator;
 import io.github.cdimascio.dotenv.Dotenv;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,14 +25,14 @@ public class WhatsappMessageFacade {
 
     private final RestTemplate restTemplate;
     private final Dotenv dotEnv;
-    private final UserRepository userRepository;
-    private final MessageRepository messageRepository;
+    private final IUserRepository userRepository;
+    private final IMessageRepository messageRepository;
     private final WhatsappRequestEntityGenerator whatsappRequestEntityGenerator;
 
     @Autowired
 
-    public WhatsappMessageFacade(RestTemplate restTemplate, Dotenv dotEnv, UserRepository userRepository,
-                                 MessageRepository messageRepository, WhatsappRequestEntityGenerator whatsappRequestEntityGenerator) {
+    public WhatsappMessageFacade(RestTemplate restTemplate, Dotenv dotEnv, IUserRepository userRepository,
+                                 IMessageRepository messageRepository, WhatsappRequestEntityGenerator whatsappRequestEntityGenerator) {
         this.restTemplate = restTemplate;
         this.dotEnv = dotEnv;
         this.userRepository = userRepository;
