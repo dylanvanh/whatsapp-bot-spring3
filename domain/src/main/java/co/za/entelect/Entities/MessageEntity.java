@@ -24,4 +24,8 @@ public class MessageEntity extends IIdentifiableEntity {
     @JoinColumn(name = "user_id")
     private UserEntity user;
 
+
+    @Column(name = "message_id")
+    private String messageId;
+
 }
