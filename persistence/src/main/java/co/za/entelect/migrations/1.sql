@@ -12,7 +12,6 @@ CREATE TABLE "user"
 );
 
 
-
 CREATE TABLE "message"
 (
     id              SERIAL PRIMARY KEY,
