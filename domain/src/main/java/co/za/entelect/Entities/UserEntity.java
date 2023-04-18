@@ -23,4 +23,6 @@ public class UserEntity extends IdentifiableEntity {
     @ManyToOne()
     @JoinColumn(name = "conversation_state_id")
     private ConversationStateEntity conversationState;
+
+    private String email;
 }

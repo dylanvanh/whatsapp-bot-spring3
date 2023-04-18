@@ -15,14 +15,14 @@ CREATE TABLE leave_type
 
 CREATE TABLE requested_leave
 (
-    id                   SERIAL PRIMARY KEY,
-    user_id              INTEGER NOT NULL,
-    leave_type_id        INTEGER NOT NULL,
-    start_date           DATE    NOT NULL,
-    end_date             DATE    NOT NULL,
-    day_count            INTEGER NOT NULL,
-    request_created_date DATE    NOT NULL,
-    request_status     bool    NOT NULL DEFAULT false,
+    id                      SERIAL PRIMARY KEY,
+    user_id                 INTEGER,
+    leave_type_id           INTEGER,
+    start_date              DATE,
+    end_date                DATE,
+    day_count               INTEGER,
+    request_created_date    timestamp,
+    request_approved_status bool NOT NULL DEFAULT false,
     FOREIGN KEY (user_id) REFERENCES "user" (id),
     FOREIGN KEY (leave_type_id) REFERENCES "leave_type" (id)
 );

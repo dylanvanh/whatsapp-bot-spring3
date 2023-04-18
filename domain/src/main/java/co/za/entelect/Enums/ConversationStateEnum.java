@@ -2,7 +2,7 @@ package co.za.entelect.Enums;
 
 public enum ConversationStateEnum {
     GREETING(1),
-    EMPLOYEE_NUMBER(2),
+    EMPLOYEE_EMAIL(2),
     START_DATE(3),
     END_DATE(4),
     LEAVE_TYPE(5),

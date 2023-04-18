@@ -3,6 +3,9 @@ package co.za.entelect.Entities;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.time.LocalDateTime;
+import java.util.Date;
+
 @Getter
 @Setter
 @NoArgsConstructor
@@ -20,18 +23,21 @@ public class RequestedLeaveEntity extends IdentifiableEntity {
     private LeaveTypeEntity leaveType;
 
     @Column(name = "start_date")
-    private String startDate;
+    private Date startDate;
 
     @Column(name = "end_date")
-    private String endDate;
+    private Date endDate;
 
-    @Column(name="day_count")
+    @Column(name = "day_count")
     private Integer dayCount;
 
-    @Column(name="request_created_date")
-    private String requestCreatedDate;
+    @Column(name = "request_created_date")
+    private LocalDateTime requestCreatedDate;
 
-    @Column(name="request_status")
-    private Boolean requestStatus;
+    @Column(name = "request_approved_status")
+    private Boolean requestApprovedStatus;
+
+    @Column(name = "request_journey_completed_status")
+    private Boolean requestJourneyCompletedStatus;
 
 }

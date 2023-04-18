@@ -5,13 +5,15 @@ import co.za.entelect.Dtos.Whatsapp.Incoming.IncomingWhatsappMessageDto;
 import co.za.entelect.Dtos.Whatsapp.Outgoing.SendTextMessageDto;
 import co.za.entelect.Dtos.Whatsapp.Outgoing.UpdateReadReceiptDto;
 import co.za.entelect.Entities.ConversationStateEntity;
+import co.za.entelect.Entities.LeaveTypeEntity;
 import co.za.entelect.Entities.MessageEntity;
 import co.za.entelect.Entities.UserEntity;
 import co.za.entelect.Enums.ConversationStateEnum;
-import co.za.entelect.repositories.ConversationStateRepository;
+import co.za.entelect.repositories.IConversationStateRepository;
 import co.za.entelect.repositories.IMessageRepository;
 import co.za.entelect.repositories.IUserRepository;
 import co.za.entelect.services.IncomingMessageValidator;
+import co.za.entelect.services.WhatsappMessageUtils;
 import co.za.entelect.services.WhatsappRequestEntityGenerator;
 import io.github.cdimascio.dotenv.Dotenv;
 import jakarta.persistence.EntityNotFoundException;
@@ -25,8 +27,6 @@ import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.Date;
 
-import static co.za.entelect.Enums.ConversationStateEnum.GREETING;
-
 
 @Service
 public class WhatsappMessageFacade {
@@ -36,21 +36,22 @@ public class WhatsappMessageFacade {
     private final IUserRepository userRepository;
     private final IMessageRepository messageRepository;
     private final WhatsappRequestEntityGenerator whatsappRequestEntityGenerator;
-    private final ConversationStateRepository conversationStateRepository;
-
+    private final IConversationStateRepository conversationStateRepository;
+    private final WhatsappMessageUtils whatsappMessageUtils;
     private final IncomingMessageValidator incomingMessageValidator;
 
     @Autowired
 
     public WhatsappMessageFacade(RestTemplate restTemplate, Dotenv dotEnv, IUserRepository userRepository,
                                  IMessageRepository messageRepository, WhatsappRequestEntityGenerator whatsappRequestEntityGenerator,
-                                 ConversationStateRepository conversationStateRepository, IncomingMessageValidator incomingMessageValidator) {
+                                 IConversationStateRepository conversationStateRepository, WhatsappMessageUtils whatsappMessageUtils, IncomingMessageValidator incomingMessageValidator) {
         this.restTemplate = restTemplate;
         this.dotEnv = dotEnv;
         this.userRepository = userRepository;
         this.messageRepository = messageRepository;
         this.whatsappRequestEntityGenerator = whatsappRequestEntityGenerator;
         this.conversationStateRepository = conversationStateRepository;
+        this.whatsappMessageUtils = whatsappMessageUtils;
         this.incomingMessageValidator = incomingMessageValidator;
     }
 
@@ -103,11 +104,11 @@ public class WhatsappMessageFacade {
 
     private void incrementConversationStateForUser(UserEntity user) {
 
-        //        Check if on last state -> reset
+        // Check if on last state -> reset
         if (user.getConversationState().getId() == ConversationStateEnum.END.ordinal()) {
-            ConversationStateEntity startingState = conversationStateRepository.findById(1L).orElseThrow(()
-                    -> new EntityNotFoundException(("Could not find conversation state with id 1")));
-            user.setConversationState(startingState);
+            ConversationStateEntity empNumberState = conversationStateRepository.findById(2L).orElseThrow(()
+                    -> new EntityNotFoundException(("Could not find conversation state with id 2")));
+            user.setConversationState(empNumberState);
         } else {
 
             ConversationStateEntity nextConversationState = conversationStateRepository.findById(user.getConversationState()
@@ -121,63 +122,115 @@ public class WhatsappMessageFacade {
 
 
     private String validateMessageAndDetermineResponse(String messageText, UserEntity user) {
-        ConversationStateEnum currentState = ConversationStateEnum.fromId(user.getConversationState().getId().intValue());
+        ConversationStateEnum currentState = incomingMessageValidator.validateCancelRequested(messageText, user);
+        if (currentState == null) {
+            currentState = ConversationStateEnum.fromId(user.getConversationState().getId().intValue());
+        }
         switch (currentState) {
-            case GREETING:
+            case GREETING -> {
                 incrementConversationStateForUser(user);
-                return "Welcome to the Entelect Leave Bot. Please enter your employee number";
-            case EMPLOYEE_NUMBER:
-                boolean validEmployeeNumber = incomingMessageValidator.validateEmployeeNumber(messageText);
-                if (validEmployeeNumber) {
+                return "Welcome to the Entelect Leave Bot. Please enter your employee email";
+            }
+            case EMPLOYEE_EMAIL -> {
+                String validEmployeeEmail = incomingMessageValidator.validateEmployeeEmail(messageText);
+                if (validEmployeeEmail != null) {
+                    whatsappMessageUtils.createInitialRequestedLeaveEntity(user, validEmployeeEmail);
                     incrementConversationStateForUser(user);
                     return "Please enter your leave start date in the format dd/mm/yyyy";
                 } else {
-                    return "Invalid employee number. Please try again";
+                    return """
+                            Invalid employee email. Please try again\s
+                            \s
+                            Cancel - CANCEL""";
                 }
-            case START_DATE:
+            }
+            case START_DATE -> {
                 Date validStartDate = incomingMessageValidator.validateDate(messageText);
                 if (validStartDate != null) {
                     incrementConversationStateForUser(user);
+                    whatsappMessageUtils.addStartDateToRequestedLeave(user, validStartDate);
                     return "Please enter your leave end date in the format dd/mm/yyyy";
                 } else {
-                    return "Invalid date. Please try again in format dd/mm/yyyy";
+                    return """
+                            Invalid date. Please try again in format dd/mm/yyyy:\s
+                            \s
+                            Cancel action - CANCEL\s
+                            """;
                 }
-            case END_DATE:
+            }
+            case END_DATE -> {
                 Date validEndDate = incomingMessageValidator.validateDate(messageText);
                 if (validEndDate != null) {
                     incrementConversationStateForUser(user);
-                    return "Please enter your leave type: \n" +
-                            "ANNUAL - 1 \n" +
-                            "SICK - 2 \n" +
-                            "FAMILY RESPONSIBILITY - 3 \n" +
-                            "BIRTHDAY - 4 \n" +
-                            "STUDY - 5 \n" +
-                            "PARENTAL - 6 \n" +
-                            "MATERNAL - 7 \n";
+                    whatsappMessageUtils.addEndDateToRequestedLeave(user, validEndDate);
+                    return """
+                            Invalid leave type. Please try again:\s
+                            ANNUAL - 1\s
+                            SICK - 2\s
+                            FAMILY RESPONSIBILITY - 3\s
+                            BIRTHDAY - 4\s
+                            STUDY - 5\s
+                            PARENTAL - 6\s
+                            MATERNAL - 7\s
+                            \s
+                            CANCEL - CANCEL\s
+                            """;
                 } else {
-                    return "Invalid date. Please try again in format dd/mm/yyyy";
+                    return """
+                            Invalid date. Please try again in format dd/mm/yyyy:\s
+                            Date - dd/mm/yyyy\s
+                            \s
+                            Cancel action - CANCEL\s
+                            """;
                 }
-            case LEAVE_TYPE:
-                boolean validLeaveType = incomingMessageValidator.validateLeaveType(messageText);
-                if (validLeaveType) {
+            }
+            case LEAVE_TYPE -> {
+                LeaveTypeEntity validLeaveType = incomingMessageValidator.validateLeaveType(messageText);
+                if (validLeaveType != null) {
+                    whatsappMessageUtils.addLeaveTypeToRequestedLeave(user, validLeaveType);
                     incrementConversationStateForUser(user);
-                    return "Please confirm your leave request by typing CONFIRMATION";
+                    return """
+                            Please confirm your leave request by typing :\s
+                            CONFIRM - confirm\s
+                            \s
+                            CANCEL - cancel\s
+                            """;
                 } else {
-                    return "Invalid leave type. Please try again: \n" +
-                            "ANNUAL - 1 \n" +
-                            "SICK - 2 \n" +
-                            "FAMILY RESPONSIBILITY - 3 \n" +
-                            "BIRTHDAY - 4 \n" +
-                            "STUDY - 5 \n" +
-                            "PARENTAL - 6 \n" +
-                            "MATERNAL - 7 \n";
+                    return """
+                            Please choose your leave type:\s
+                            ANNUAL - 1\s
+                            SICK - 2\s
+                            FAMILY RESPONSIBILITY - 3\s
+                            BIRTHDAY - 4\s
+                            STUDY - 5\s
+                            PARENTAL - 6\s
+                            MATERNAL - 7\s
+                            \s
+                            CANCEL - CANCEL\s
+                            """;
                 }
-            case CONFIRMATION:
-                return "ASD";
-            case END:
-                return "ASD";
-            default:
+            }
+            case CONFIRMATION -> {
+                boolean validConfirmation = incomingMessageValidator.validateConfirmation(messageText);
+                if (validConfirmation) {
+                    whatsappMessageUtils.completeLeaveRequest(user);
+                    incrementConversationStateForUser(user);
+                    return "Your leave request has been submitted";
+                } else {
+                    return "Invalid confirmation. Please try again by typing confirm";
+                }
+            }
+            case END -> {
+                return "This is the end of the road for you cowboy. \n" +
+                        "Put down your gun and walk away \n " +
+                        "You have no more options \n" +
+                        "You have no more choices \n" +
+                        "You have no more chances \n" +
+                        "Surrender while you still can";
+            }
+            default -> {
                 return "I don't understand";
+            }
         }
     }
 
