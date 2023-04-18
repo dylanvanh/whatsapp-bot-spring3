@@ -1,9 +1,6 @@
 package co.za.entelect.Entities;
 
-import jakarta.persistence.AttributeOverride;
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import lombok.*;
 
 @Getter
@@ -22,4 +19,8 @@ public class UserEntity extends IdentifiableEntity {
 
     @Column(name = "phone_number_id")
     private String phoneNumberId;
+
+    @ManyToOne()
+    @JoinColumn(name = "conversation_state_id")
+    private ConversationStateEntity conversationState;
 }
