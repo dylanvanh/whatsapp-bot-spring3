@@ -10,26 +10,41 @@ public class WhatsappResponse {
     public static final String START_DATE_INITIAL = """
             Please provide your leave start date in the format \s
             \s
-            Cancel - CANCEL\s
-            dd/mm/yyyy
+            dd/mm/yyyy\s
+            \s
+            Cancel - CANCEL
             """;
 
-    public static final String START_DATE_INVALID = """
+    public static final String START_DATE_INVALID_FORMAT = """
             Invalid start date. Please try again in format dd/mm/yyyy:\s
             \s
             Cancel - CANCEL\s
             """;
+
+    public static final String START_DATE_IN_PAST = """
+            Start date cannot be in the past. Please try again:\s
+            \s
+            Cancel - CANCEL\s
+            """;
+
     public static final String END_DATE_INITIAL = """
             Please provide your leave end date in the format dd/mm/yyyy \s
             \s
             Cancel - CANCEL
             """;
 
-    public static final String END_DATE_INVALID = """
+    public static final String END_DATE_INVALID_FORMAT = """
             Invalid end date. Please try again in format dd/mm/yyyy:\s
             \s
             CANCEL - CANCEL
             """;
+
+    public static final String END_DATE_BEFORE_START_DATE = """
+            End date cannot be before or the same as the start date. Please try again:\s
+            \s
+            CANCEL - CANCEL
+            """;
+
     public static final String INVALID_EMAIL = """
             Please select an option:\s
             \s

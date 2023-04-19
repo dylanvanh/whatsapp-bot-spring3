@@ -10,6 +10,7 @@ import co.za.entelect.Entities.MessageEntity;
 import co.za.entelect.Entities.UserEntity;
 import co.za.entelect.Enums.ConversationStateEnum;
 import co.za.entelect.Enums.UserChoiceEnum;
+import co.za.entelect.Exceptions.DateException;
 import co.za.entelect.constants.WhatsappResponse;
 import co.za.entelect.repositories.IConversationStateRepository;
 import co.za.entelect.repositories.IMessageRepository;
@@ -156,23 +157,27 @@ public class WhatsappMessageFacade {
                 }
             }
             case START_DATE -> {
-                Date validStartDate = incomingMessageValidator.validateStartDate(messageText);
-                if (validStartDate != null) {
+                try {
+                    Date validStartDate = incomingMessageValidator.validateStartDate(messageText);
                     updateConversationStateForUser(user, ConversationStateEnum.END_DATE);
                     whatsappMessageUtils.addStartDateToRequestedLeave(user, validStartDate);
                     return WhatsappResponse.END_DATE_INITIAL;
-                } else {
-                    return WhatsappResponse.START_DATE_INVALID;
+                } catch (DateException.InvalidDateFormatException e) {
+                    return WhatsappResponse.START_DATE_INVALID_FORMAT;
+                } catch (DateException.DateInPastException e) {
+                    return WhatsappResponse.START_DATE_IN_PAST;
                 }
             }
             case END_DATE -> {
-                Date validEndDate = incomingMessageValidator.validateEndDate(messageText, user);
-                if (validEndDate != null) {
+                try {
+                    Date validEndDate = incomingMessageValidator.validateEndDate(messageText, user);
                     updateConversationStateForUser(user, ConversationStateEnum.LEAVE_TYPE);
                     whatsappMessageUtils.addEndDateToRequestedLeave(user, validEndDate);
                     return WhatsappResponse.LEAVE_TYPE_INITIAL;
-                } else {
-                    return WhatsappResponse.END_DATE_INVALID;
+                } catch (DateException.InvalidDateFormatException e) {
+                    return WhatsappResponse.END_DATE_INVALID_FORMAT;
+                } catch (DateException.DateBeforeStartDateException e) {
+                    return WhatsappResponse.END_DATE_BEFORE_START_DATE;
                 }
             }
             case LEAVE_TYPE -> {

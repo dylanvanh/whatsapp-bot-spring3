@@ -6,6 +6,7 @@ import co.za.entelect.Entities.UserEntity;
 import co.za.entelect.Enums.ConversationStateEnum;
 import co.za.entelect.Enums.LeaveTypeEnum;
 import co.za.entelect.Enums.UserChoiceEnum;
+import co.za.entelect.Exceptions.DateException;
 import co.za.entelect.repositories.IConversationStateRepository;
 import co.za.entelect.repositories.ILeaveTypeRepository;
 import co.za.entelect.repositories.IRequestedLeaveRepository;
@@ -52,11 +53,11 @@ public class IncomingMessageValidator {
             Date parsedDate = dateFormat.parse(date);
             Date todaysDate = getCurrentDateWithoutTime();
             if (parsedDate.before(todaysDate)) {
-                return null;
+                throw new DateException.DateInPastException("");
             }
             return dateFormat.parse(date);
         } catch (ParseException e) {
-            return null;
+            throw new DateException.InvalidDateFormatException("");
         }
     }
 
@@ -70,11 +71,11 @@ public class IncomingMessageValidator {
                             user.getId(), false);
             Date startDate = requestedLeaveEntity.getStartDate();
             if (!parsedDate.after(startDate)) {
-                return null;
+                throw new DateException.DateBeforeStartDateException("");
             }
             return dateFormat.parse(date);
         } catch (ParseException e) {
-            return null;
+            throw new DateException.InvalidDateFormatException("");
         }
     }
 
