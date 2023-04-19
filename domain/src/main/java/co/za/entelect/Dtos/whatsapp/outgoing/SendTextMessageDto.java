@@ -1,6 +1,6 @@
-package co.za.entelect.Dtos.whatsapp.outgoing;
+package co.za.entelect.dtos.whatsapp.outgoing;
 
-import co.za.entelect.Dtos.whatsapp.IWhatsappDto;
+import co.za.entelect.dtos.whatsapp.IWhatsappDto;
 import lombok.Builder;
 
 @Builder

@@ -1,4 +1,4 @@
-package co.za.entelect.Dtos.whatsapp.incoming;
+package co.za.entelect.dtos.whatsapp.incoming;
 
 import java.util.List;
 

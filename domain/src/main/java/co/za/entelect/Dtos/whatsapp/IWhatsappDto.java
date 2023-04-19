@@ -1,4 +1,4 @@
-package co.za.entelect.Dtos.whatsapp;
+package co.za.entelect.dtos.whatsapp;
 
 public interface IWhatsappDto {
 }
