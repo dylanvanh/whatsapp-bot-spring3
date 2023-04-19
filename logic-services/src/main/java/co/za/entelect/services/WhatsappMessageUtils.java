@@ -81,13 +81,6 @@ public class WhatsappMessageUtils {
             user.setConversationState(choiceConversationState);
             userRepository.save(user);
         }
-//        else {
-//            //reset to enter email state
-//            ConversationStateEntity conversationStateEntity = iConversationStateRepository.
-//                    findById((long) ConversationStateEnum.EMPLOYEE_EMAIL.getId()).orElseThrow(
-//                            () -> new EntityNotFoundException("EMPLOYEE EMAIL Conversation state not found"));
-//            user.setConversationState(conversationStateEntity);
-//        }
     }
 
     public String getRequestedLeaveForUser(UserEntity user) {

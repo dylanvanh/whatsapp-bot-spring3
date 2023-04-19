@@ -76,7 +76,6 @@ public class IncomingMessageValidator {
         String cleanedMessageText = messageText.strip().toLowerCase();
         if (cleanedMessageText.equals("cancel")) {
             //delete existing requested leave entity
-
             return ConversationStateEnum.CANCEL;
         }
         return null;
