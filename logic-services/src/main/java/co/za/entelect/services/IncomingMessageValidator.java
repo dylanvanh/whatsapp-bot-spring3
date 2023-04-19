@@ -12,6 +12,7 @@ import co.za.entelect.repositories.ILeaveTypeRepository;
 import co.za.entelect.repositories.IRequestedLeaveRepository;
 import co.za.entelect.repositories.IUserRepository;
 import jakarta.persistence.EntityNotFoundException;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.text.DateFormat;
@@ -23,22 +24,17 @@ import java.util.Date;
 @Service
 public class IncomingMessageValidator {
     private final IRequestedLeaveRepository requestedLeaveRepository;
-    private final IConversationStateRepository conversationStateRepository;
-    private final IUserRepository userRepository;
     private final ILeaveTypeRepository leaveTypeRepository;
 
+    @Autowired
     public IncomingMessageValidator(IRequestedLeaveRepository requestedLeaveRepository,
-                                    IConversationStateRepository conversationStateRepository,
-                                    IUserRepository iUserRepository, ILeaveTypeRepository iLeaveTypeRepository) {
+                                    ILeaveTypeRepository iLeaveTypeRepository) {
         this.requestedLeaveRepository = requestedLeaveRepository;
-        this.conversationStateRepository = conversationStateRepository;
-        this.userRepository = iUserRepository;
         this.leaveTypeRepository = iLeaveTypeRepository;
     }
 
     public String validateEmployeeEmail(String employeeEmail) {
         String cleanedEmail = employeeEmail.strip().toLowerCase();
-        //validate if the string is an email
         boolean isValidEmail = employeeEmail.matches("^[a-zA-Z0-9+_.-]+@[a-zA-Z0-9.-]+$") && employeeEmail.contains("@entelect.co.za");
         if (!isValidEmail) {
             return null;
@@ -66,13 +62,21 @@ public class IncomingMessageValidator {
         dateFormat.setLenient(false);
         try {
             Date parsedDate = dateFormat.parse(date);
+
             RequestedLeaveEntity requestedLeaveEntity = requestedLeaveRepository
                     .findTopByUserIdAndRequestJourneyCompletedStatusOrderByRequestCreatedDateDesc(
                             user.getId(), false);
+
             Date startDate = requestedLeaveEntity.getStartDate();
+
             if (!parsedDate.after(startDate)) {
                 throw new DateException.DateBeforeStartDateException("");
             }
+
+            int totalDays = (int) ((parsedDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24));
+            requestedLeaveEntity.setDayCount(totalDays);
+            requestedLeaveRepository.save(requestedLeaveEntity);
+
             return dateFormat.parse(date);
         } catch (ParseException e) {
             throw new DateException.InvalidDateFormatException("");
@@ -94,9 +98,8 @@ public class IncomingMessageValidator {
             if (validLeaveType == null) {
                 return null;
             }
-            LeaveTypeEntity leaveTypeEntity = leaveTypeRepository.findById((long) validLeaveType.getId())
+            return leaveTypeRepository.findById((long) validLeaveType.getId())
                     .orElseThrow(() -> new EntityNotFoundException("Leave type not found"));
-            return leaveTypeEntity;
         } catch (Exception e) {
             return null;
         }
@@ -110,7 +113,6 @@ public class IncomingMessageValidator {
     public ConversationStateEnum validateCancelRequested(String messageText, UserEntity user) {
         String cleanedMessageText = messageText.strip().toLowerCase();
         if (cleanedMessageText.equals("cancel")) {
-            //delete existing requested leave entity
             return ConversationStateEnum.CANCEL;
         }
         return null;

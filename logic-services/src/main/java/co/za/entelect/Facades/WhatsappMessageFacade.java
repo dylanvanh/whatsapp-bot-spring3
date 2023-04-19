@@ -43,7 +43,6 @@ public class WhatsappMessageFacade {
     private final IncomingMessageValidator incomingMessageValidator;
 
     @Autowired
-
     public WhatsappMessageFacade(RestTemplate restTemplate, Dotenv dotEnv, IUserRepository userRepository,
                                  IMessageRepository messageRepository, WhatsappRequestEntityGenerator whatsappRequestEntityGenerator,
                                  IConversationStateRepository conversationStateRepository, WhatsappMessageUtils whatsappMessageUtils, IncomingMessageValidator incomingMessageValidator) {
@@ -87,19 +86,16 @@ public class WhatsappMessageFacade {
     }
 
     private SendTextMessageDto generateResponse(String fromNumber, String messageText, String phoneNumberId) {
-
         UserEntity user = userRepository.findByPhoneNumberId(phoneNumberId);
         String response = validateMessageAndDetermineResponse(messageText, user);
 
-        SendTextMessageDto sendTextMessageDto = SendTextMessageDto.builder()
+        return SendTextMessageDto.builder()
                 .messaging_product("whatsapp")
                 .to(fromNumber)
                 .text(SendTextMessageDto.MessageText
                         .builder()
                         .body(response).build())
                 .build();
-
-        return sendTextMessageDto;
     }
 
     private void updateConversationStateForUser(UserEntity user, ConversationStateEnum conversationStateEnum) {
@@ -144,7 +140,6 @@ public class WhatsappMessageFacade {
                         return whatsappMessageUtils.getRequestedLeaveForUser(user);
                     }
                 } else {
-//                    TODO - Add cancel functionality for edge case
                     return """
                             Invalid choice. Please try again:\s
                             \s
@@ -219,27 +214,10 @@ public class WhatsappMessageFacade {
         return "ERROR";
     }
 
-
-    private UserEntity getOrCreateUserEntity(String phoneNumberId, String fromNumber, String userName) {
-        UserEntity existingUser = userRepository.findByPhoneNumberId(phoneNumberId);
-        if (existingUser == null) {
-            ConversationStateEntity startingConversationState = conversationStateRepository.findById(1L).orElseThrow(()
-                    -> new EntityNotFoundException(("Could not find conversation state with id 1")));
-            existingUser = UserEntity.builder()
-                    .phone(fromNumber)
-                    .phoneNumberId(phoneNumberId)
-                    .name(userName)
-                    .conversationState(startingConversationState)
-                    .build();
-            userRepository.save(existingUser);
-        }
-        return existingUser;
-    }
-
     private void saveMessage(String messageId, String fromNumber, String messageText, String phoneNumberId,
                              String timeStamp, String userName) {
 
-        UserEntity existingUser = getOrCreateUserEntity(phoneNumberId, fromNumber, userName);
+        UserEntity existingUser = whatsappMessageUtils.getOrCreateUserEntity(phoneNumberId, fromNumber, userName);
 
         MessageEntity newMessage = MessageEntity.builder()
                 .message(messageText)
