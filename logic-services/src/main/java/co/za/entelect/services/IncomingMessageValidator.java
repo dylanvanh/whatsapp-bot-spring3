@@ -1,6 +1,5 @@
 package co.za.entelect.services;
 
-import co.za.entelect.Entities.ConversationStateEntity;
 import co.za.entelect.Entities.LeaveTypeEntity;
 import co.za.entelect.Entities.RequestedLeaveEntity;
 import co.za.entelect.Entities.UserEntity;
@@ -17,6 +16,7 @@ import org.springframework.stereotype.Service;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.Calendar;
 import java.util.Date;
 
 @Service
@@ -26,7 +26,9 @@ public class IncomingMessageValidator {
     private final IUserRepository userRepository;
     private final ILeaveTypeRepository leaveTypeRepository;
 
-    public IncomingMessageValidator(IRequestedLeaveRepository requestedLeaveRepository, IConversationStateRepository conversationStateRepository, IUserRepository iUserRepository, ILeaveTypeRepository iLeaveTypeRepository) {
+    public IncomingMessageValidator(IRequestedLeaveRepository requestedLeaveRepository,
+                                    IConversationStateRepository conversationStateRepository,
+                                    IUserRepository iUserRepository, ILeaveTypeRepository iLeaveTypeRepository) {
         this.requestedLeaveRepository = requestedLeaveRepository;
         this.conversationStateRepository = conversationStateRepository;
         this.userRepository = iUserRepository;
@@ -43,15 +45,47 @@ public class IncomingMessageValidator {
         return cleanedEmail;
     }
 
-    public Date validateDate(String date) {
+    public Date validateStartDate(String date) {
         DateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy");
+        dateFormat.setLenient(false);
         try {
+            Date parsedDate = dateFormat.parse(date);
+            Date todaysDate = getCurrentDateWithoutTime();
+            if (parsedDate.before(todaysDate)) {
+                return null;
+            }
             return dateFormat.parse(date);
         } catch (ParseException e) {
             return null;
         }
     }
 
+    public Date validateEndDate(String date, UserEntity user) {
+        DateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy");
+        dateFormat.setLenient(false);
+        try {
+            Date parsedDate = dateFormat.parse(date);
+            RequestedLeaveEntity requestedLeaveEntity = requestedLeaveRepository
+                    .findTopByUserIdAndRequestJourneyCompletedStatusOrderByRequestCreatedDateDesc(
+                            user.getId(), false);
+            Date startDate = requestedLeaveEntity.getStartDate();
+            if (!parsedDate.after(startDate)) {
+                return null;
+            }
+            return dateFormat.parse(date);
+        } catch (ParseException e) {
+            return null;
+        }
+    }
+
+    private Date getCurrentDateWithoutTime() {
+        Calendar calendar = Calendar.getInstance();
+        calendar.set(Calendar.HOUR_OF_DAY, 0);
+        calendar.set(Calendar.MINUTE, 0);
+        calendar.set(Calendar.SECOND, 0);
+        calendar.set(Calendar.MILLISECOND, 0);
+        return calendar.getTime();
+    }
 
     public LeaveTypeEntity validateLeaveType(String messageText) {
         try {

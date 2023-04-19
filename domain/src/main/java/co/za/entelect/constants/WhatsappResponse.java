@@ -9,23 +9,26 @@ public class WhatsappResponse {
 
     public static final String START_DATE_INITIAL = """
             Please provide your leave start date in the format \s
+            \s
+            Cancel - CANCEL\s
             dd/mm/yyyy
             """;
 
     public static final String START_DATE_INVALID = """
             Invalid start date. Please try again in format dd/mm/yyyy:\s
             \s
-            Cancel action - CANCEL\s
+            Cancel - CANCEL\s
             """;
     public static final String END_DATE_INITIAL = """
-            Please provide your leave end date in the format \s
-            dd/mm/yyyy
+            Please provide your leave end date in the format dd/mm/yyyy \s
+            \s
+            Cancel - CANCEL
             """;
 
     public static final String END_DATE_INVALID = """
             Invalid end date. Please try again in format dd/mm/yyyy:\s
             \s
-            Cancel action - CANCEL\s
+            CANCEL - CANCEL
             """;
     public static final String INVALID_EMAIL = """
             Please select an option:\s
@@ -34,7 +37,7 @@ public class WhatsappResponse {
             \s
             2 - View Requested Leave\s
             \s
-            Cancel - CANCEL\s
+            CANCEL- CANCEL
             """;
     public static final String CHOICE_INITIAL = """
             Please select an option:\s
@@ -43,7 +46,7 @@ public class WhatsappResponse {
             \s
             2 - View Requested Leave\s
             \s
-            Cancel - CANCEL\s
+            CANCEL - CANCEL\s
             """;
 
     public static final String LEAVE_TYPE_INITIAL = """

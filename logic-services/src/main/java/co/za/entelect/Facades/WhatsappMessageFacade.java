@@ -156,7 +156,7 @@ public class WhatsappMessageFacade {
                 }
             }
             case START_DATE -> {
-                Date validStartDate = incomingMessageValidator.validateDate(messageText);
+                Date validStartDate = incomingMessageValidator.validateStartDate(messageText);
                 if (validStartDate != null) {
                     updateConversationStateForUser(user, ConversationStateEnum.END_DATE);
                     whatsappMessageUtils.addStartDateToRequestedLeave(user, validStartDate);
@@ -166,7 +166,7 @@ public class WhatsappMessageFacade {
                 }
             }
             case END_DATE -> {
-                Date validEndDate = incomingMessageValidator.validateDate(messageText);
+                Date validEndDate = incomingMessageValidator.validateEndDate(messageText, user);
                 if (validEndDate != null) {
                     updateConversationStateForUser(user, ConversationStateEnum.LEAVE_TYPE);
                     whatsappMessageUtils.addEndDateToRequestedLeave(user, validEndDate);
