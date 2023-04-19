@@ -1,4 +1,4 @@
-package co.za.entelect.Entities;
+package co.za.entelect.entities;
 
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;

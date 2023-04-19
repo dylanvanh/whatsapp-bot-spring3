@@ -1,4 +1,4 @@
-package co.za.entelect.Enums;
+package co.za.entelect.enums;
 
 public enum UserChoiceEnum {
     MAKE_LEAVE_REQUEST(1),

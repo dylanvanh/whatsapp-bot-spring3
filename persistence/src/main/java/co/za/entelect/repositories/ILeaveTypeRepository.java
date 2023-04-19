@@ -1,6 +1,6 @@
 package co.za.entelect.repositories;
 
-import co.za.entelect.Entities.LeaveTypeEntity;
+import co.za.entelect.entities.LeaveTypeEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

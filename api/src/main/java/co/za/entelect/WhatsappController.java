@@ -1,6 +1,6 @@
 package co.za.entelect;
 
-import co.za.entelect.Dtos.Whatsapp.Incoming.IncomingWhatsappMessageDto;
+import co.za.entelect.Dtos.whatsapp.incoming.IncomingWhatsappMessageDto;
 import co.za.entelect.Facades.WhatsappMessageFacade;
 import io.github.cdimascio.dotenv.Dotenv;
 import org.springframework.beans.factory.annotation.Autowired;

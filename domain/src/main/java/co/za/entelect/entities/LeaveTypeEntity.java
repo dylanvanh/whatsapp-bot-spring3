@@ -1,4 +1,4 @@
-package co.za.entelect.Entities;
+package co.za.entelect.entities;
 
 import jakarta.persistence.AttributeOverride;
 import jakarta.persistence.Column;
@@ -12,8 +12,9 @@ import lombok.*;
 @AllArgsConstructor
 @Builder
 @AttributeOverride(name = "id", column = @Column(name = "id"))
-@Table(name = "conversation_state", schema = "public")
+@Table(name = "leave_type", schema = "public")
 @Entity
-public class ConversationStateEntity extends IdentifiableEntity {
+public class LeaveTypeEntity extends IdentifiableEntity {
+
     private String name;
 }

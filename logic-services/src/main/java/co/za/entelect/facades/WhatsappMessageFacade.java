@@ -1,15 +1,15 @@
 package co.za.entelect.Facades;
 
-import co.za.entelect.Dtos.Whatsapp.Incoming.IncomingMessageSentResponse;
-import co.za.entelect.Dtos.Whatsapp.Incoming.IncomingWhatsappMessageDto;
-import co.za.entelect.Dtos.Whatsapp.Outgoing.SendTextMessageDto;
-import co.za.entelect.Dtos.Whatsapp.Outgoing.UpdateReadReceiptDto;
-import co.za.entelect.Entities.ConversationStateEntity;
-import co.za.entelect.Entities.LeaveTypeEntity;
-import co.za.entelect.Entities.MessageEntity;
-import co.za.entelect.Entities.UserEntity;
-import co.za.entelect.Enums.ConversationStateEnum;
-import co.za.entelect.Enums.UserChoiceEnum;
+import co.za.entelect.Dtos.whatsapp.incoming.IncomingMessageSentResponse;
+import co.za.entelect.Dtos.whatsapp.incoming.IncomingWhatsappMessageDto;
+import co.za.entelect.Dtos.whatsapp.outgoing.SendTextMessageDto;
+import co.za.entelect.Dtos.whatsapp.outgoing.UpdateReadReceiptDto;
+import co.za.entelect.entities.ConversationStateEntity;
+import co.za.entelect.entities.LeaveTypeEntity;
+import co.za.entelect.entities.MessageEntity;
+import co.za.entelect.entities.UserEntity;
+import co.za.entelect.enums.ConversationStateEnum;
+import co.za.entelect.enums.UserChoiceEnum;
 import co.za.entelect.Exceptions.DateException;
 import co.za.entelect.constants.WhatsappResponse;
 import co.za.entelect.repositories.IConversationStateRepository;

@@ -1,10 +1,10 @@
 package co.za.entelect.services;
 
-import co.za.entelect.Entities.ConversationStateEntity;
-import co.za.entelect.Entities.LeaveTypeEntity;
-import co.za.entelect.Entities.RequestedLeaveEntity;
-import co.za.entelect.Entities.UserEntity;
-import co.za.entelect.Enums.ConversationStateEnum;
+import co.za.entelect.entities.ConversationStateEntity;
+import co.za.entelect.entities.LeaveTypeEntity;
+import co.za.entelect.entities.RequestedLeaveEntity;
+import co.za.entelect.entities.UserEntity;
+import co.za.entelect.enums.ConversationStateEnum;
 import co.za.entelect.repositories.IConversationStateRepository;
 import co.za.entelect.repositories.IRequestedLeaveRepository;
 import co.za.entelect.repositories.IUserRepository;
@@ -15,10 +15,8 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
-import java.time.format.FormatStyle;
 import java.util.Date;
 import java.util.List;
-import java.util.Locale;
 
 @Service
 public class WhatsappMessageUtils {

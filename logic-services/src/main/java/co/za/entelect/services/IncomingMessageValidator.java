@@ -1,16 +1,14 @@
 package co.za.entelect.services;
 
-import co.za.entelect.Entities.LeaveTypeEntity;
-import co.za.entelect.Entities.RequestedLeaveEntity;
-import co.za.entelect.Entities.UserEntity;
-import co.za.entelect.Enums.ConversationStateEnum;
-import co.za.entelect.Enums.LeaveTypeEnum;
-import co.za.entelect.Enums.UserChoiceEnum;
+import co.za.entelect.entities.LeaveTypeEntity;
+import co.za.entelect.entities.RequestedLeaveEntity;
+import co.za.entelect.entities.UserEntity;
+import co.za.entelect.enums.ConversationStateEnum;
+import co.za.entelect.enums.LeaveTypeEnum;
+import co.za.entelect.enums.UserChoiceEnum;
 import co.za.entelect.Exceptions.DateException;
-import co.za.entelect.repositories.IConversationStateRepository;
 import co.za.entelect.repositories.ILeaveTypeRepository;
 import co.za.entelect.repositories.IRequestedLeaveRepository;
-import co.za.entelect.repositories.IUserRepository;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;

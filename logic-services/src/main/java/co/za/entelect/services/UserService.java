@@ -1,6 +1,6 @@
 package co.za.entelect.services;
 
-import co.za.entelect.Entities.UserEntity;
+import co.za.entelect.entities.UserEntity;
 import co.za.entelect.repositories.IUserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
