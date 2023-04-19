@@ -13,8 +13,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
+import java.time.format.FormatStyle;
 import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 
 @Service
 public class WhatsappMessageUtils {
@@ -103,10 +107,20 @@ public class WhatsappMessageUtils {
     }
 
     public String getRequestedLeaveForUser(UserEntity user) {
-        // #TODO - get requested leave for user
-        //get all requested leave for user
         List<RequestedLeaveEntity> requestedLeaveList = requestedLeaveRepository.findAllByUserId(user.getId());
-
-        return requestedLeaveList.toString();
+        StringBuilder output = new StringBuilder("Here is your requested leave:\n\n");
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+        for (RequestedLeaveEntity requestedLeave : requestedLeaveList) {
+            output.append("Leave ID: ").append(requestedLeave.getId())
+                    .append("\nType: ").append(requestedLeave.getLeaveType().getName())
+                    .append("\nStart date: ").append(requestedLeave.getStartDate().toInstant().atZone(ZoneId.systemDefault()).toLocalDate().format(formatter))
+                    .append("\nEnd date: ").append(requestedLeave.getEndDate().toInstant().atZone(ZoneId.systemDefault()).toLocalDate().format(formatter))
+                    .append("\nDays: ").append(requestedLeave.getDayCount())
+                    .append("\nStatus: ").append(requestedLeave.getRequestApprovedStatus() ? "Approved" : "Pending")
+                    .append("\n-------------------------------------------")
+                    .append("\n\n");
+        }
+        return output.toString();
     }
+
 }
