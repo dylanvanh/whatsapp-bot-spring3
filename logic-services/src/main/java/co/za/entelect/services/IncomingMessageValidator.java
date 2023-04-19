@@ -6,6 +6,7 @@ import co.za.entelect.Entities.RequestedLeaveEntity;
 import co.za.entelect.Entities.UserEntity;
 import co.za.entelect.Enums.ConversationStateEnum;
 import co.za.entelect.Enums.LeaveTypeEnum;
+import co.za.entelect.Enums.UserChoiceEnum;
 import co.za.entelect.repositories.IConversationStateRepository;
 import co.za.entelect.repositories.ILeaveTypeRepository;
 import co.za.entelect.repositories.IRequestedLeaveRepository;
@@ -75,31 +76,18 @@ public class IncomingMessageValidator {
         String cleanedMessageText = messageText.strip().toLowerCase();
         if (cleanedMessageText.equals("cancel")) {
             //delete existing requested leave entity
-            RequestedLeaveEntity requestedLeaveEntity = requestedLeaveRepository.
-                    findTopByUserIdAndRequestJourneyCompletedStatusOrderByRequestCreatedDateDesc(user.getId(),
-                            false);
-            requestedLeaveRepository.delete(requestedLeaveEntity);
 
-            if (user.getEmail() != null) {
-                //reset to the START_DATE state -> already have user details
-                long newConversationStateId = ConversationStateEnum.START_DATE.getId();
-                ConversationStateEntity conversationStateEntity = conversationStateRepository.findById(
-                        newConversationStateId).orElseThrow(
-                        () -> new EntityNotFoundException("START_DATE entity not found"));
-                user.setConversationState(conversationStateEntity);
-                userRepository.save(user);
-                return ConversationStateEnum.START_DATE;
-            } else {
-                //reset conversation state to GREETING
-                long newConversationStateId = ConversationStateEnum.GREETING.getId();
-                ConversationStateEntity conversationStateEntity = conversationStateRepository.findById(
-                        newConversationStateId).orElseThrow(
-                        () -> new EntityNotFoundException("GREETING entity not found"));
-                user.setConversationState(conversationStateEntity);
-                userRepository.save(user);
-                return ConversationStateEnum.GREETING;
-            }
+            return ConversationStateEnum.CANCEL;
         }
         return null;
+    }
+
+    public UserChoiceEnum validateChoice(String messageText) {
+        String cleanedMessage = messageText.strip().toLowerCase();
+        try {
+            return UserChoiceEnum.fromId(Integer.parseInt(cleanedMessage));
+        } catch (Exception e) {
+            return null;
+        }
     }
 }

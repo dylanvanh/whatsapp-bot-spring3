@@ -9,6 +9,7 @@ import co.za.entelect.Entities.LeaveTypeEntity;
 import co.za.entelect.Entities.MessageEntity;
 import co.za.entelect.Entities.UserEntity;
 import co.za.entelect.Enums.ConversationStateEnum;
+import co.za.entelect.Enums.UserChoiceEnum;
 import co.za.entelect.repositories.IConversationStateRepository;
 import co.za.entelect.repositories.IMessageRepository;
 import co.za.entelect.repositories.IUserRepository;
@@ -102,41 +103,52 @@ public class WhatsappMessageFacade {
         return sendTextMessageDto;
     }
 
-    private void incrementConversationStateForUser(UserEntity user) {
+    private void updateConversationStateForUser(UserEntity user, ConversationStateEnum conversationStateEnum) {
 
-        // Check if on last state -> reset
-        if (user.getConversationState().getId() == ConversationStateEnum.END.ordinal()) {
-            ConversationStateEntity empNumberState = conversationStateRepository.findById(2L).orElseThrow(()
-                    -> new EntityNotFoundException(("Could not find conversation state with id 2")));
-            user.setConversationState(empNumberState);
-        } else {
+//        if (user.getConversationState().getId() + 1 == ConversationStateEnum.END.getId()) {
+//            ConversationStateEntity choiceConversationState = conversationStateRepository.findById(
+//                    Long.valueOf(ConversationStateEnum.CHOICE.getId())).orElseThrow(
+//                    () -> new EntityNotFoundException(
+//                            ("Could not find conversation state with id " + ConversationStateEnum.CHOICE.getId())
+//                    ));
+//            user.setConversationState(choiceConversationState);
+//            return;
+//        }
 
-            ConversationStateEntity nextConversationState = conversationStateRepository.findById(user.getConversationState()
-                    .getId() + 1).orElseThrow(() -> new EntityNotFoundException(
-                    ("Could not find conversation state with id " + user.getConversationState().getId() + 1)));
-            user.setConversationState(nextConversationState);
-        }
-
+        ConversationStateEntity newConversationState = conversationStateRepository.findById(
+                Long.valueOf(conversationStateEnum.getId())).orElseThrow(
+                () -> new EntityNotFoundException(
+                        ("Could not find conversation state with id " + conversationStateEnum.getId())
+                ));
+        user.setConversationState(newConversationState);
         userRepository.save(user);
     }
 
 
     private String validateMessageAndDetermineResponse(String messageText, UserEntity user) {
         ConversationStateEnum currentState = incomingMessageValidator.validateCancelRequested(messageText, user);
-        if (currentState == null) {
+        if (currentState != ConversationStateEnum.CANCEL) {
             currentState = ConversationStateEnum.fromId(user.getConversationState().getId().intValue());
         }
         switch (currentState) {
             case GREETING -> {
-                incrementConversationStateForUser(user);
+                updateConversationStateForUser(user, ConversationStateEnum.EMPLOYEE_EMAIL);
                 return "Welcome to the Entelect Leave Bot. Please enter your employee email";
             }
             case EMPLOYEE_EMAIL -> {
                 String validEmployeeEmail = incomingMessageValidator.validateEmployeeEmail(messageText);
                 if (validEmployeeEmail != null) {
-                    whatsappMessageUtils.createInitialRequestedLeaveEntity(user, validEmployeeEmail);
-                    incrementConversationStateForUser(user);
-                    return "Please enter your leave start date in the format dd/mm/yyyy";
+                    whatsappMessageUtils.updateEmployeeEmail(user, validEmployeeEmail);
+                    updateConversationStateForUser(user, ConversationStateEnum.CHOICE);
+                    return """
+                            Please select an option:\s
+                            \s
+                            1 - Request Leave\s
+                            \s
+                            2 - View Requested Leave\s
+                            \s
+                            Cancel - CANCEL\s
+                            """;
                 } else {
                     return """
                             Invalid employee email. Please try again\s
@@ -144,10 +156,33 @@ public class WhatsappMessageFacade {
                             Cancel - CANCEL""";
                 }
             }
+            case CHOICE -> {
+                UserChoiceEnum validChoice = incomingMessageValidator.validateChoice(messageText);
+                if (validChoice != null) {
+                    if (validChoice == UserChoiceEnum.MAKE_LEAVE_REQUEST) {
+                        whatsappMessageUtils.generateNewRequestedLeaveEntity(user);
+                        updateConversationStateForUser(user, ConversationStateEnum.START_DATE);
+                        return "Please enter your leave start date in the format dd/mm/yyyy";
+                    } else if (validChoice == UserChoiceEnum.VIEW_LEAVE_REQUESTS) {
+                        return whatsappMessageUtils.getRequestedLeaveForUser(user);
+                    }
+                } else {
+//                    TODO - Add cancel functionality for edge case
+                    return """
+                            Invalid choice. Please try again:\s
+                            \s
+                            1 - Request Leave\s
+                            \s
+                            2 - View Requested Leave\s
+                            \s
+                            Cancel - CANCEL\s
+                            """;
+                }
+            }
             case START_DATE -> {
                 Date validStartDate = incomingMessageValidator.validateDate(messageText);
                 if (validStartDate != null) {
-                    incrementConversationStateForUser(user);
+                    updateConversationStateForUser(user, ConversationStateEnum.END_DATE);
                     whatsappMessageUtils.addStartDateToRequestedLeave(user, validStartDate);
                     return "Please enter your leave end date in the format dd/mm/yyyy";
                 } else {
@@ -161,10 +196,10 @@ public class WhatsappMessageFacade {
             case END_DATE -> {
                 Date validEndDate = incomingMessageValidator.validateDate(messageText);
                 if (validEndDate != null) {
-                    incrementConversationStateForUser(user);
+                    updateConversationStateForUser(user, ConversationStateEnum.LEAVE_TYPE);
                     whatsappMessageUtils.addEndDateToRequestedLeave(user, validEndDate);
                     return """
-                            Invalid leave type. Please try again:\s
+                            Please choose the leave type:\s
                             ANNUAL - 1\s
                             SICK - 2\s
                             FAMILY RESPONSIBILITY - 3\s
@@ -188,7 +223,7 @@ public class WhatsappMessageFacade {
                 LeaveTypeEntity validLeaveType = incomingMessageValidator.validateLeaveType(messageText);
                 if (validLeaveType != null) {
                     whatsappMessageUtils.addLeaveTypeToRequestedLeave(user, validLeaveType);
-                    incrementConversationStateForUser(user);
+                    updateConversationStateForUser(user, ConversationStateEnum.CONFIRMATION);
                     return """
                             Please confirm your leave request by typing :\s
                             CONFIRM - confirm\s
@@ -197,7 +232,7 @@ public class WhatsappMessageFacade {
                             """;
                 } else {
                     return """
-                            Please choose your leave type:\s
+                            Invalid leave type provided. Please try again:\s
                             ANNUAL - 1\s
                             SICK - 2\s
                             FAMILY RESPONSIBILITY - 3\s
@@ -214,24 +249,49 @@ public class WhatsappMessageFacade {
                 boolean validConfirmation = incomingMessageValidator.validateConfirmation(messageText);
                 if (validConfirmation) {
                     whatsappMessageUtils.completeLeaveRequest(user);
-                    incrementConversationStateForUser(user);
-                    return "Your leave request has been submitted";
+                    updateConversationStateForUser(user, ConversationStateEnum.CHOICE);
+                    return """
+                            Your leave request has been submitted:\s
+                            \s
+                            Please select an option:\s
+                            \s
+                            1 - Request Leave\s
+                            \s
+                            2 - View Requested Leave\s
+                            \s
+                            Cancel - CANCEL
+                            """;
                 } else {
                     return "Invalid confirmation. Please try again by typing confirm";
                 }
             }
             case END -> {
-                return "This is the end of the road for you cowboy. \n" +
-                        "Put down your gun and walk away \n " +
-                        "You have no more options \n" +
-                        "You have no more choices \n" +
-                        "You have no more chances \n" +
-                        "Surrender while you still can";
+                return """
+                         Invalid input provided. Please try again:\s
+                         CONFIRM - confirm \s
+                         \s
+                         CANCEL - cancel
+                        """;
+            }
+            case CANCEL -> {
+                whatsappMessageUtils.cancelLeaveRequest(user);
+                return """
+                            Your Leave Request has been cancelled:\s
+                            \s
+                            Please select an option:\s
+                            \s
+                            1 - Request Leave\s
+                            \s
+                            2 - View Requested Leave\s
+                            \s
+                            Cancel - CANCEL\s
+                            """;
             }
             default -> {
                 return "I don't understand";
             }
         }
+        return "ERROR";
     }
 
 

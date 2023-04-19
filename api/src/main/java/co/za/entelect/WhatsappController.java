@@ -24,15 +24,13 @@ public class WhatsappController {
 
     @PostMapping
     public ResponseEntity<?> handleWebhook(@RequestBody IncomingWhatsappMessageDto incomingMessageDto) {
-        System.out.println("POST REQUEST HIT");
 
         if (incomingMessageDto == null) {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
-
         _messageService.handleIncomingMessage(incomingMessageDto);
-        return new ResponseEntity<>(HttpStatus.OK);
 
+        return new ResponseEntity<>(HttpStatus.OK);
     }
 
     @GetMapping
@@ -40,8 +38,6 @@ public class WhatsappController {
             @RequestParam("hub.mode") String mode,
             @RequestParam("hub.verify_token") String token,
             @RequestParam("hub.challenge") String challenge) {
-
-        System.out.println("HIT");
 
         String verifyToken = dotEnv.get("VERIFY_TOKEN");
 
