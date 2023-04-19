@@ -1,17 +1,17 @@
-package co.za.entelect.Facades;
+package co.za.entelect.facades;
 
-import co.za.entelect.Dtos.whatsapp.incoming.IncomingMessageSentResponse;
-import co.za.entelect.Dtos.whatsapp.incoming.IncomingWhatsappMessageDto;
-import co.za.entelect.Dtos.whatsapp.outgoing.SendTextMessageDto;
-import co.za.entelect.Dtos.whatsapp.outgoing.UpdateReadReceiptDto;
+import co.za.entelect.dtos.whatsapp.incoming.IncomingMessageSentResponse;
+import co.za.entelect.dtos.whatsapp.incoming.IncomingWhatsappMessageDto;
+import co.za.entelect.dtos.whatsapp.outgoing.SendTextMessageDto;
+import co.za.entelect.dtos.whatsapp.outgoing.UpdateReadReceiptDto;
+import co.za.entelect.exceptions.DateException;
+import co.za.entelect.constants.WhatsappResponse;
 import co.za.entelect.entities.ConversationStateEntity;
 import co.za.entelect.entities.LeaveTypeEntity;
 import co.za.entelect.entities.MessageEntity;
 import co.za.entelect.entities.UserEntity;
 import co.za.entelect.enums.ConversationStateEnum;
 import co.za.entelect.enums.UserChoiceEnum;
-import co.za.entelect.Exceptions.DateException;
-import co.za.entelect.constants.WhatsappResponse;
 import co.za.entelect.repositories.IConversationStateRepository;
 import co.za.entelect.repositories.IMessageRepository;
 import co.za.entelect.repositories.IUserRepository;
@@ -140,15 +140,7 @@ public class WhatsappMessageFacade {
                         return whatsappMessageUtils.getRequestedLeaveForUser(user);
                     }
                 } else {
-                    return """
-                            Invalid choice. Please try again:\s
-                            \s
-                            1 - Request Leave\s
-                            \s
-                            2 - View Requested Leave\s
-                            \s
-                            Cancel - CANCEL\s
-                            """;
+                    return WhatsappResponse.CHOICE_INVALID;
                 }
             }
             case START_DATE -> {

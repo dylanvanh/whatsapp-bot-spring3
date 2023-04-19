@@ -1,4 +1,4 @@
-package co.za.entelect.Exceptions;
+package co.za.entelect.exceptions;
 
 public class DateException extends RuntimeException {
     public DateException(String message) {

@@ -64,6 +64,17 @@ public class WhatsappResponse {
             CANCEL - CANCEL\s
             """;
 
+    public static final String CHOICE_INVALID =
+            """
+                                    Invalid choice. Please try again:\s
+                                    \s
+                                    1 - Request Leave\s
+                                    \s
+                                    2 - View Requested Leave\s
+                                    \s
+                                    Cancel - CANCEL\s
+                                    """;
+
     public static final String LEAVE_TYPE_INITIAL = """
             Please choose the leave type:\s
             ANNUAL - 1\s

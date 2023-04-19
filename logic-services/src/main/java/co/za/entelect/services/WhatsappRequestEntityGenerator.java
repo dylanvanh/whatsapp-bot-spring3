@@ -1,6 +1,6 @@
 package co.za.entelect.services;
 
-import co.za.entelect.Dtos.whatsapp.IWhatsappDto;
+import co.za.entelect.dtos.whatsapp.IWhatsappDto;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.github.cdimascio.dotenv.Dotenv;
 import org.springframework.http.HttpEntity;

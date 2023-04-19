@@ -6,7 +6,7 @@ import co.za.entelect.entities.UserEntity;
 import co.za.entelect.enums.ConversationStateEnum;
 import co.za.entelect.enums.LeaveTypeEnum;
 import co.za.entelect.enums.UserChoiceEnum;
-import co.za.entelect.Exceptions.DateException;
+import co.za.entelect.exceptions.DateException;
 import co.za.entelect.repositories.ILeaveTypeRepository;
 import co.za.entelect.repositories.IRequestedLeaveRepository;
 import jakarta.persistence.EntityNotFoundException;
