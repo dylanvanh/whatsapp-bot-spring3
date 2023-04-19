@@ -1,5 +1,3 @@
-CREATE USER whatsapp_user WITH PASSWORD 'password123';
-
 -- Create the auth_database
 CREATE DATABASE whatsapp WITH OWNER whatsapp_user;
 
@@ -20,15 +18,3 @@ CREATE TABLE "message"
     received_datetime timestamp     NOT NULL,
     FOREIGN KEY (user_id) REFERENCES "user" (id)
 );
-
-
-
-GRANT ALL PRIVILEGES ON DATABASE whatsapp TO whatsapp_user;
-GRANT ALL PRIVILEGES ON TABLE "message" TO whatsapp_user;
-GRANT ALL PRIVILEGES ON TABLE "user" TO whatsapp_user;
-GRANT USAGE,
-SELECT
-ON SEQUENCE message_id_seq TO whatsapp_user;
-GRANT USAGE,
-SELECT
-ON SEQUENCE user_id_seq TO whatsapp_user;
