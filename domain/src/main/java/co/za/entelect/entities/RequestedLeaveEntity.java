@@ -40,4 +40,6 @@ public class RequestedLeaveEntity extends IdentifiableEntity {
     @Column(name = "request_journey_completed_status")
     private Boolean requestJourneyCompletedStatus;
 
+    @Column(name = "comment")
+    private String comment;
 }

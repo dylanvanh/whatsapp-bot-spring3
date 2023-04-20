@@ -9,7 +9,8 @@ public enum ConversationStateEnum {
     CONFIRMATION(6),
     END(7),
     CHOICE(8),
-    CANCEL(9);
+    CANCEL(9),
+    COMMENT(10);
     private final int id;
 
     ConversationStateEnum(int id) {

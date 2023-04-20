@@ -66,14 +66,14 @@ public class WhatsappResponse {
 
     public static final String CHOICE_INVALID =
             """
-                                    Invalid choice. Please try again:\s
-                                    \s
-                                    1 - Request Leave\s
-                                    \s
-                                    2 - View Requested Leave\s
-                                    \s
-                                    Cancel - CANCEL\s
-                                    """;
+                    Invalid choice. Please try again:\s
+                    \s
+                    1 - Request Leave\s
+                    \s
+                    2 - View Requested Leave\s
+                    \s
+                    Cancel - CANCEL\s
+                    """;
 
     public static final String LEAVE_TYPE_INITIAL = """
             Please choose the leave type:\s
@@ -134,6 +134,19 @@ public class WhatsappResponse {
             1 - Request Leave\s
             \s
             2 - View Requested Leave\s
+            \s
+            Cancel - CANCEL\s
+            """;
+
+    public static final String COMMENT_INITIAL = """
+            Please provide a comment for your leave request:\s
+            \s
+            Cancel - CANCEL\s
+            """;
+
+    public static final String COMMENT_INVALID = """
+            Invalid comment provided , maximum 500 characters allowed.
+            Please try again:\s
             \s
             Cancel - CANCEL\s
             """;

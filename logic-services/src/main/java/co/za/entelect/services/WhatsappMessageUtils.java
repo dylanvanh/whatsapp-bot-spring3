@@ -121,4 +121,9 @@ public class WhatsappMessageUtils {
         return output.toString();
     }
 
+    public void addCommentToRequestedLeave(UserEntity user, String messageText) {
+        RequestedLeaveEntity requestedLeaveEntity = requestedLeaveRepository.findTopByUserIdOrderByIdDesc(user.getId());
+        requestedLeaveEntity.setComment(messageText);
+        requestedLeaveRepository.save(requestedLeaveEntity);
+    }
 }

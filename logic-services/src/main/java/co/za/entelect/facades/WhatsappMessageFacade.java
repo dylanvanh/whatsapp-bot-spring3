@@ -121,26 +121,24 @@ public class WhatsappMessageFacade {
             }
             case EMPLOYEE_EMAIL -> {
                 String validEmployeeEmail = incomingMessageValidator.validateEmployeeEmail(messageText);
-                if (validEmployeeEmail != null) {
-                    whatsappMessageUtils.updateEmployeeEmail(user, validEmployeeEmail);
-                    updateConversationStateForUser(user, ConversationStateEnum.CHOICE);
-                    return WhatsappResponse.CHOICE_INITIAL;
-                } else {
+                if (validEmployeeEmail == null) {
                     return WhatsappResponse.INVALID_EMAIL;
                 }
+                whatsappMessageUtils.updateEmployeeEmail(user, validEmployeeEmail);
+                updateConversationStateForUser(user, ConversationStateEnum.CHOICE);
+                return WhatsappResponse.CHOICE_INITIAL;
             }
             case CHOICE -> {
                 UserChoiceEnum validChoice = incomingMessageValidator.validateChoice(messageText);
-                if (validChoice != null) {
-                    if (validChoice == UserChoiceEnum.MAKE_LEAVE_REQUEST) {
-                        whatsappMessageUtils.generateNewRequestedLeaveEntity(user);
-                        updateConversationStateForUser(user, ConversationStateEnum.START_DATE);
-                        return WhatsappResponse.START_DATE_INITIAL;
-                    } else if (validChoice == UserChoiceEnum.VIEW_LEAVE_REQUESTS) {
-                        return whatsappMessageUtils.getRequestedLeaveForUser(user);
-                    }
-                } else {
+                if (validChoice == null) {
                     return WhatsappResponse.CHOICE_INVALID;
+                }
+                if (validChoice == UserChoiceEnum.MAKE_LEAVE_REQUEST) {
+                    whatsappMessageUtils.generateNewRequestedLeaveEntity(user);
+                    updateConversationStateForUser(user, ConversationStateEnum.START_DATE);
+                    return WhatsappResponse.START_DATE_INITIAL;
+                } else {
+                    return whatsappMessageUtils.getRequestedLeaveForUser(user);
                 }
             }
             case START_DATE -> {
@@ -169,23 +167,30 @@ public class WhatsappMessageFacade {
             }
             case LEAVE_TYPE -> {
                 LeaveTypeEntity validLeaveType = incomingMessageValidator.validateLeaveType(messageText);
-                if (validLeaveType != null) {
-                    whatsappMessageUtils.addLeaveTypeToRequestedLeave(user, validLeaveType);
-                    updateConversationStateForUser(user, ConversationStateEnum.CONFIRMATION);
-                    return WhatsappResponse.CONFIRMATION_INITIAL;
-                } else {
+                if (validLeaveType == null) {
                     return WhatsappResponse.LEAVE_TYPE_INVALID;
                 }
+                whatsappMessageUtils.addLeaveTypeToRequestedLeave(user, validLeaveType);
+                updateConversationStateForUser(user, ConversationStateEnum.COMMENT);
+                return WhatsappResponse.COMMENT_INITIAL;
+            }
+            case COMMENT -> {
+                String validComment = incomingMessageValidator.validateComment(messageText);
+                if (validComment == null) {
+                    return WhatsappResponse.COMMENT_INVALID;
+                }
+                whatsappMessageUtils.addCommentToRequestedLeave(user, messageText);
+                updateConversationStateForUser(user, ConversationStateEnum.CONFIRMATION);
+                return WhatsappResponse.CONFIRMATION_INITIAL;
             }
             case CONFIRMATION -> {
                 boolean validConfirmation = incomingMessageValidator.validateConfirmation(messageText);
-                if (validConfirmation) {
-                    whatsappMessageUtils.completeLeaveRequest(user);
-                    updateConversationStateForUser(user, ConversationStateEnum.CHOICE);
-                    return WhatsappResponse.CONFIRMATION_VALID;
-                } else {
+                if (!validConfirmation) {
                     return WhatsappResponse.CONFIRMATION_INVALID;
                 }
+                whatsappMessageUtils.completeLeaveRequest(user);
+                updateConversationStateForUser(user, ConversationStateEnum.CHOICE);
+                return WhatsappResponse.CONFIRMATION_VALID;
             }
             case END -> {
                 return """
@@ -203,7 +208,6 @@ public class WhatsappMessageFacade {
                 return "I don't understand";
             }
         }
-        return "ERROR";
     }
 
     private void saveMessage(String messageId, String fromNumber, String messageText, String phoneNumberId,

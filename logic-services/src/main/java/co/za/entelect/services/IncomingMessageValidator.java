@@ -124,4 +124,12 @@ public class IncomingMessageValidator {
             return null;
         }
     }
+
+    public String validateComment(String messageText) {
+        String cleanedMessage = messageText.strip();
+        if (cleanedMessage.length() > 500) {
+            return null;
+        }
+        return cleanedMessage;
+    }
 }
